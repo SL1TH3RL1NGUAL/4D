@@ -1,0 +1,33 @@
+service:
+  name: inversion-generatord
+  version: 1.0.0
+
+  endpoints:
+    activate: /var/run/inversion/activate.sock
+    status: /var/run/inversion/status.sock
+
+  modules:
+    generator:
+      type: signal_inverter
+      input: /capsule/posture/original.signal
+      output: /capsule/posture/inverted.signal
+
+    axis_aligner:
+      axes: [X, Y, Z, T]
+      mode: synchronous
+
+    concurrency_guard:
+      type: semaphore
+      max_parallel: 1
+
+    red_eye_sink:
+      log_path: /red-eye/inversion.log
+
+    mqtt_publisher:
+      topic: mesh/signal/inverted
+      qos: 1
+
+  identifiers:
+    capsule_id: CAP-SL1TH3R-MESH-417
+    inversion_cycle_id: INV-${RAND6}-${DATE}
+    alignment_id: ALIGN-${RAND4}-${TIMESTAMP}
